@@ -4,6 +4,7 @@
 import NextLink from "next/link";
 import {
   Flex,
+  Heading,
   HStack,
   Button,
   Avatar,
@@ -27,7 +28,7 @@ export default function Header({
 }: HeaderProps) {
   const { colorMode, toggleColorMode } = useColorMode();
 
-  // Choix du background et de la couleur du texte en fonction du mode
+  // Choix du background et couleur du texte selon le mode
   const bgColor = colorMode === "light" ? "teal.500" : "gray.900";
   const textColor = "white";
 
@@ -41,31 +42,50 @@ export default function Header({
       color={textColor}
       boxShadow="sm"
     >
-      {/* Section gauche : Logo et navigation */}
-      <HStack spacing={8} alignItems="center">
-        <Logo />
-        <HStack spacing={6}>
-          <NextLink href="/" passHref>
-            <ChakraLink fontWeight="medium" _hover={{ color: "yellow.300" }}>
-              Accueil
-            </ChakraLink>
-          </NextLink>
-          <NextLink href="/about" passHref>
-            <ChakraLink fontWeight="medium" _hover={{ color: "yellow.300" }}>
-              À propos
-            </ChakraLink>
-          </NextLink>
-          <NextLink href="/contact" passHref>
-            <ChakraLink fontWeight="medium" _hover={{ color: "yellow.300" }}>
-              Contact
-            </ChakraLink>
-          </NextLink>
-        </HStack>
+      {/* Logo (uniquement ChakraLink qui se comporte comme NextLink) */}
+      <Logo/>
+      <ChakraLink
+        as={NextLink}
+        href="/"
+        _hover={{ textDecoration: "none" }}
+        mr={8} // marge à droite pour séparer du menu
+      >
+        <Heading as="h1" size="lg" cursor="pointer">
+          NutriPit
+        </Heading>
+      </ChakraLink>
+
+      {/* Navigation */}
+      <HStack spacing={6}>
+        <ChakraLink
+          as={NextLink}
+          href="/"
+          fontWeight="medium"
+          _hover={{ color: "yellow.300" }}
+        >
+          Accueil
+        </ChakraLink>
+        <ChakraLink
+          as={NextLink}
+          href="/about"
+          fontWeight="medium"
+          _hover={{ color: "yellow.300" }}
+        >
+          À propos
+        </ChakraLink>
+        <ChakraLink
+          as={NextLink}
+          href="/contact"
+          fontWeight="medium"
+          _hover={{ color: "yellow.300" }}
+        >
+          Contact
+        </ChakraLink>
       </HStack>
 
       <Spacer />
 
-      {/* Section droite : Actions et bascule du thème */}
+      {/* Section droite : actions et bascule du thème */}
       <HStack spacing={4}>
         <IconButton
           aria-label="Toggle theme"
@@ -78,10 +98,20 @@ export default function Header({
           <Avatar size="sm" name="Utilisateur" src={userAvatarUrl} />
         ) : (
           <HStack spacing={2}>
-            <Button leftIcon={<FiLogIn />} colorScheme="teal" variant="outline" size="sm">
+            <Button
+              leftIcon={<FiLogIn />}
+              colorScheme="teal"
+              variant="outline"
+              size="sm"
+            >
               Connexion
             </Button>
-            <Button leftIcon={<FiUserPlus />} colorScheme="teal" variant="solid" size="sm">
+            <Button
+              leftIcon={<FiUserPlus />}
+              colorScheme="teal"
+              variant="solid"
+              size="sm"
+            >
               Inscription
             </Button>
           </HStack>
