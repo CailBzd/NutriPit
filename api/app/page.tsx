@@ -1,12 +1,9 @@
 // app/page.tsx
-export default function HomePage() {
+export default function Home() {
   return (
-    <section>
-      <h2>Bienvenue sur NutriPit</h2>
-      <p>
-        NutriPit est une solution numérique complète destinée aux établissements
-        qui nécessitent une gestion personnalisée des repas pour des personnes dont la nutrition est contrôlée.
-      </p>
-    </section>
+    <div>
+      <h1>Welcome to the NutriPit API</h1>
+      <p>This is the API for the NutriPit application.</p>
+    </div>
   );
 }

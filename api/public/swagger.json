@@ -1,0 +1,141 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Mon API",
+    "version": "1.0.0",
+    "description": "Documentation de l'API"
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "summary": "User login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login"
+          },
+          "400": {
+            "description": "Login failed"
+          }
+        }
+      }
+    },
+    "/api/auth/resetPassword": {
+      "post": {
+        "summary": "Réinitialisation du mot de passe",
+        "description": "Envoie un email pour réinitialiser le mot de passe de l'utilisateur.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email de réinitialisation envoyé.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password reset email sent"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Échec lors de la réinitialisation."
+          }
+        }
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "summary": "Inscription d'un utilisateur",
+        "description": "Crée un nouvel utilisateur avec l'email et le mot de passe fournis.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "newuser@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "secretpassword"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inscription réussie, retourne l'objet utilisateur.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "newuser@example.com"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "New User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Échec de l'inscription."
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

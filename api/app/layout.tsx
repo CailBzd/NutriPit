@@ -1,7 +1,13 @@
 // app/layout.tsx
-import '../globals.css';
-import Header from '../../web/components/Header';
-import Footer from '../../web/components/Footer';
+import type { Metadata } from 'next';
+// import { initializeDatabase } from '../lib/dbInit';
+
+export const metadata: Metadata = {
+  title: 'NutriPit API',
+  description: 'API for NutriPit application',
+};
+
+// await initializeDatabase();
 
 export default function RootLayout({
   children,
@@ -9,17 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
-      <head>
-        <title>NutriPit</title>
-      </head>
-      <body>
-        <Header />
-        <main style={{ minHeight: '80vh', padding: '1rem' }}>
-          {children}
-        </main>
-        <Footer />
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }
