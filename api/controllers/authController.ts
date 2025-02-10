@@ -1,5 +1,6 @@
 // controllers/authController.ts
 
+import { UserProfile, UserProfileFromDB } from '@/types/profile';
 import { supabase } from '../lib/supabase';
 import { SupabaseError } from '../types/supabase';
 
@@ -29,6 +30,7 @@ export const login = async (email: string, password: string) => {
 export const signUp = async (email: string, password: string) => {
   // Appel à l'API Supabase pour inscrire l'utilisateur.
   const { data, error } = await supabase.auth.signUp({ email, password });
+
   if (error) throw error as SupabaseError;
   return data.user;
 };
@@ -44,4 +46,32 @@ export const resetPassword = async (email: string) => {
   // Appel à l'API Supabase pour lancer la procédure de réinitialisation.
   const { error } = await supabase.auth.resetPasswordForEmail(email);
   if (error) throw error as SupabaseError;
+};
+
+/**
+ * Récupère le profil d'un utilisateur en fonction de son ID.
+ * @param {string} userId - L'ID de l'utilisateur.
+ * @returns {Promise<UserProfile>} Le profil utilisateur contenant son rôle.
+ * @throws {SupabaseError} Si la récupération échoue.
+ */
+export const getUserById = async (userId: string): Promise<UserProfile> => {
+  const { data, error } = await supabase
+    .from("profiles") // Table contenant les profils utilisateurs
+    .select("id, email, role_id, roles(role_name)") // Jointure avec la table `roles`
+    .eq("id", userId)
+    .single<UserProfileFromDB>(); // Un seul résultat
+
+  if (error) throw error as SupabaseError;
+
+  // ✅ On force `data` à être de type `UserProfile`
+  const userProfile: UserProfile = {
+    id: data.id,
+    email: data.email,
+    role_id: data.role_id,
+    role_name: data.roles?.role_name || "guest", // Valeur par défaut
+  };
+
+  console.log(userProfile);
+
+  return userProfile;
 };

@@ -15,3 +15,26 @@ export interface Role {
     // Ajoutez d'autres champs si nécessaire
   }
   
+  export interface SignupResponse {
+    id: string;
+    email: string;
+    role_id: string;
+    // Autres champs si nécessaire
+  }
+  
+  export interface LoginResponse {
+    id: string;
+    email: string;
+    name?: string;
+    role: string;
+    // Autres champs si nécessaire
+  }
+
+  export interface Session {
+    user: {
+      id: string;
+      email: string;
+      // Autres champs si nécessaire
+    };
+    profile?: Profile;
+  }
