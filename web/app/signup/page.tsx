@@ -1,18 +1,10 @@
-// app/signup/page.tsx
+// app/signup/page.tsx (ou src/pages/signup.tsx)
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Box,
-  Button,
-  Input,
-  Heading,
-  Text,
-  VStack,
-  HStack,
-} from "@chakra-ui/react";
-import supabase from "@/lib/supabase";
+import { VStack, Heading, Input, Button, Text, HStack } from "@chakra-ui/react";
+import { signup } from "@/services/authService";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -24,28 +16,13 @@ export default function SignupPage() {
   const handleSignup = async () => {
     setLoading(true);
     setErrorMsg("");
-
-    // On transmet dans les métadonnées que le rôle sera "manager" (gérant) par défaut.
-    const { data, error } = await supabase.auth.signUp({
-      email : "bizard.pierre@hotmail.fr",
-      password: "07059119-maI",
-      options: {
-        data: {
-          role: 'manager'  // par exemple, "manager" par défaut
-        }
-      }
-    });
-
-    if (error) {
+    try {
+      await signup(email, password);
+      alert("Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.");
+      router.push("/login");
+    } catch (error: any) {
       setErrorMsg(error.message);
-      setLoading(false);
-      return;
     }
-
-    alert(
-      "Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte."
-    );
-    router.push("/login");
     setLoading(false);
   };
 
