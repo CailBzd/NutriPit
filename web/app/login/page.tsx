@@ -3,83 +3,63 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Box, Button, Input, Heading, Text, VStack, HStack } from "@chakra-ui/react";
-import type { Profile } from "../../types/profile";
-import supabase from "@/lib/supabase";
+import { VStack, HStack, Heading, Text, Input, Button } from "@chakra-ui/react";
+import { apiPost } from "@/lib/apiClient";
 
 export default function AuthPage() {
   const router = useRouter();
-  const [isLogin, setIsLogin] = useState(true); // true = connexion, false = inscription
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async () => {
+    console.log("Début du handleSubmit, mode login =", isLogin);
     setLoading(true);
     setErrorMsg("");
 
-    if (isLogin) {
-      // Connexion
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) {
-        setErrorMsg(error.message);
-        setLoading(false);
-        return;
-      }
-      const user = data.user;
-      if (!user) {
-        setErrorMsg("Utilisateur introuvable.");
-        setLoading(false);
-        return;
-      }
-      // Récupérer le profil de l'utilisateur, en supposant qu'une jointure renvoie un tableau de rôles
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("role_id, roles(role_name)")
-        .eq("id", user.id)
-        .single();
-
-      if (profileError) {
-        setErrorMsg(profileError.message);
-        setLoading(false);
-        return;
-      }
-
-      // Caster le résultat en type Profile
-      const profile = profileData as Profile;
-      const roleName = profile.roles?.[0]?.role_name;
-      if (!roleName) {
-        setErrorMsg("Aucun rôle trouvé pour cet utilisateur.");
-        setLoading(false);
-        return;
-      }
-
-      // Redirection selon le rôle de l'utilisateur
-      if (roleName === "administrator") {
-        router.push("/admin");
-      } else if (roleName === "manager") {
-        router.push("/manager");
-      } else if (roleName === "resident") {
-        router.push("/resident");
+    try {
+      if (isLogin) {
+        console.log("Appel de l'API de connexion avec email :", email);
+        // Appel à l'API pour la connexion
+        const result = await apiPost<{ user: any; role: string }>("/Auth/login", { email, password });
+        console.log("Réponse API (login) :", result);
+        const roleName = result.role;
+        if (!roleName) {
+          setErrorMsg("Aucun rôle trouvé pour cet utilisateur.");
+          console.error("Erreur : Aucun rôle trouvé");
+          setLoading(false);
+          return;
+        }
+        console.log("Rôle de l'utilisateur :", roleName);
+        // Redirection selon le rôle
+        if (roleName === "administrator") {
+          console.log("Redirection vers /admin");
+          router.push("/admin");
+        } else if (roleName === "manager") {
+          console.log("Redirection vers /manager");
+          router.push("/manager");
+        } else if (roleName === "resident") {
+          console.log("Redirection vers /resident");
+          router.push("/resident");
+        } else {
+          console.log("Redirection vers /guest");
+          router.push("/guest");
+        }
       } else {
-        router.push("/guest");
+        console.log("Appel de l'API d'inscription avec email :", email);
+        // Appel à l'API pour l'inscription
+        const signupResult = await apiPost("/auth/signup", { email, password });
+        console.log("Réponse API (signup) :", signupResult);
+        alert("Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.");
+        router.push("/login");
       }
-    } else {
-      // Inscription
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      if (error) {
-        setErrorMsg(error.message);
-        setLoading(false);
-        return;
-      }
-      alert("Inscription réussie. Veuillez vérifier votre email pour confirmer votre compte.");
+    } catch (error: any) {
+      console.error("Erreur dans handleSubmit :", error);
+      setErrorMsg(error.message);
+    } finally {
+      console.log("Fin de l'exécution de handleSubmit");
       setLoading(false);
     }
   };
