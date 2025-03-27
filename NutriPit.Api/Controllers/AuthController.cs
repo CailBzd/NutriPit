@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace NutriPit.Api.Controllers
 {
@@ -17,9 +15,8 @@ namespace NutriPit.Api.Controllers
         private readonly string _supabaseUrl;
         private readonly string _supabaseAnonKey;
 
-        public AuthController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public AuthController(IConfiguration configuration)
         {
-            _httpClient = httpClientFactory.CreateClient();
             _supabaseUrl = configuration["Supabase:Url"];       // Par exemple : "https://your-project.supabase.co"
             _supabaseAnonKey = configuration["Supabase:AnonKey"]; // Votre clé anonyme
         }
@@ -36,23 +33,16 @@ namespace NutriPit.Api.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            Console.WriteLine("Login");
-            var endpoint = $"{_supabaseUrl}/auth/v1/token?grant_type=password";
-            var payload = new { email = request.Email, password = request.Password };
-            var jsonPayload = JsonSerializer.Serialize(payload);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            var vClient = new Supabase.Client(_supabaseUrl, _supabaseAnonKey);
+            var vUser = await vClient.Auth.SignInWithPassword(request.Email, request.Password);
+            var vProfile = await vClient.From<Profile>().Where(x => x.Email == request.Email).Single();
+            var vRole = await vClient.From<Role>().Where(x => x.Id == vProfile.RoleId).Single();
 
-            _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("apikey", _supabaseAnonKey);
-
-            var response = await _httpClient.PostAsync(endpoint, content);
-            if (!response.IsSuccessStatusCode)
+            var result = new
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                return BadRequest(errorContent);
-            }
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<object>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                User = new { vProfile.Id, vProfile.Email },
+                Role = new { vRole.Id, vRole.RoleName }
+            };
             return Ok(result);
         }
 
@@ -70,11 +60,14 @@ namespace NutriPit.Api.Controllers
         {
             var endpoint = $"{_supabaseUrl}/auth/v1/signup";
             // On transmet dans les options les métadonnées, ici le rôle "manager" par défaut
-            var payload = new {
+            var payload = new
+            {
                 email = request.Email,
                 password = request.Password,
-                options = new {
-                    data = new {
+                options = new
+                {
+                    data = new
+                    {
                         role = "manager"
                     }
                 }

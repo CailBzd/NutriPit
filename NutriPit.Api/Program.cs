@@ -13,6 +13,7 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddHttpClient();
 // Ajoutez vos services et configuration habituelle
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>

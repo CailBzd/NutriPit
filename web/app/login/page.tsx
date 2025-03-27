@@ -23,8 +23,9 @@ export default function AuthPage() {
       if (isLogin) {
         console.log("Appel de l'API de connexion avec email :", email);
         // Appel à l'API pour la connexion
-        const result = await apiPost<{ user: any; role: string }>("/Auth/login", { email, password });
+        const result = await apiPost<{ user: any; role: string }>("/auth/login", { email, password });
         console.log("Réponse API (login) :", result);
+    
         const roleName = result.role;
         if (!roleName) {
           setErrorMsg("Aucun rôle trouvé pour cet utilisateur.");
@@ -32,20 +33,25 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
+    
         console.log("Rôle de l'utilisateur :", roleName);
         // Redirection selon le rôle
-        if (roleName === "administrator") {
-          console.log("Redirection vers /admin");
-          router.push("/admin");
-        } else if (roleName === "manager") {
-          console.log("Redirection vers /manager");
-          router.push("/manager");
-        } else if (roleName === "resident") {
-          console.log("Redirection vers /resident");
-          router.push("/resident");
-        } else {
-          console.log("Redirection vers /guest");
-          router.push("/guest");
+        switch (roleName) {
+          case "administrator":
+            console.log("Redirection vers /admin");
+            router.push("/admin");
+            break;
+          case "manager":
+            console.log("Redirection vers /manager");
+            router.push("/manager");
+            break;
+          case "resident":
+            console.log("Redirection vers /resident");
+            router.push("/resident");
+            break;
+          default:
+            console.log("Redirection vers /guest");
+            router.push("/guest");
         }
       } else {
         console.log("Appel de l'API d'inscription avec email :", email);
@@ -57,7 +63,7 @@ export default function AuthPage() {
       }
     } catch (error: any) {
       console.error("Erreur dans handleSubmit :", error);
-      setErrorMsg(error.message);
+      setErrorMsg(error.message || "Une erreur inattendue s'est produite.");
     } finally {
       console.log("Fin de l'exécution de handleSubmit");
       setLoading(false);

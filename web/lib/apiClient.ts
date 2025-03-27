@@ -1,5 +1,5 @@
 // lib/apiClient.ts
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:5001/api";
 
 /**
  * Envoie une requête POST à l'API.
@@ -20,7 +20,7 @@ export async function apiPost<T>(endpoint: string, body: any): Promise<T> {
     body: JSON.stringify(body),
   });
 
-  console.log(`[apiPost] Statut de la réponse : ${response.status}`);
+  console.log(`[apiPost] Réponse : ${response.status} ${response.statusText}`);
 
   if (!response.ok) {
     const errorText = await response.text();
