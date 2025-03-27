@@ -2,15 +2,15 @@
 
 export interface Role {
     id: number;
-    role_name: string;
+    roleName: string;
   }
   
   // Dans Profile, si la jointure renvoie un tableau :
   export interface Profile {
     id: string; // ID de l'utilisateur (souvent un UUID)
     email?: string;
-    avatar_url?: string;
-    role_id: number;
+    avatarUrl?: string;
+    roleId: number;
     roles?: Role[]; // Remarquez le tableau ici
     // Ajoutez d'autres champs si nécessaire
   }

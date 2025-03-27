@@ -1,8 +1,5 @@
-// services/authService.ts
-import { LoginResponse, Session, SignupResponse } from "@/types/profile";
+import { LoginResponse, SignupResponse } from "@/types/profile";
 import { buildApiUrl } from "./apiHelper";
-
-
 
 /**
  * Inscrit un nouvel utilisateur en appelant l'API.
@@ -13,9 +10,6 @@ import { buildApiUrl } from "./apiHelper";
 export async function signup(email: string, password: string): Promise<SignupResponse> {
   const url = buildApiUrl("auth", "signup");
 
-  email = "bizard.pierre@hotmail.fr"
-  password = "12346-teST"
-
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -24,8 +18,9 @@ export async function signup(email: string, password: string): Promise<SignupRes
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Erreur lors de l'inscription");
+    throw new Error(errorData.message || "Erreur lors de l'inscription");
   }
+
   return res.json();
 }
 
@@ -43,12 +38,18 @@ export async function login(email: string, password: string): Promise<LoginRespo
     body: JSON.stringify({ email, password }),
   });
 
-  console.log("WEB : authService | login | Réponse API :", res);
-
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.error || "Erreur lors de la connexion");
+    // Analyse de la réponse d'erreur pour fournir un message plus précis
+    if (errorData.message === "Invalid login credentials") {
+      throw new Error("Identifiant ou mot de passe incorrect.");
+    } else if (errorData.message === "User not found") {
+      throw new Error("Aucun utilisateur trouvé avec cet email.");
+    } else {
+      throw new Error(errorData.message || "Erreur lors de la connexion");
+    }
   }
+
   return res.json();
 }
 
@@ -57,12 +58,13 @@ export async function getUserProfile() {
 
   const res = await fetch(url, {
     method: "GET",
-    credentials: "include", // Si ton API utilise des cookies pour la session
+    credentials: "include", // Si votre API utilise des cookies pour la session
     headers: { "Content-Type": "application/json" },
   });
 
   if (!res.ok) {
-    throw new Error("Impossible de récupérer le profil utilisateur.");
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Impossible de récupérer le profil utilisateur.");
   }
 
   return res.json();
@@ -73,7 +75,9 @@ export async function logout(): Promise<void> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
+
   if (!res.ok) {
-    throw new Error("Erreur lors de la déconnexion");
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Erreur lors de la déconnexion");
   }
 }

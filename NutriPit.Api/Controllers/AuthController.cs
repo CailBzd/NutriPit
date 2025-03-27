@@ -25,26 +25,71 @@ namespace NutriPit.Api.Controllers
         /// Authentifie un utilisateur en vérifiant ses identifiants.
         /// </summary>
         /// <param name="request">Les identifiants de connexion.</param>
-        /// <returns>L'utilisateur authentifié.</returns>
+        /// <returns>L'utilisateur authentifié avec son rôle.</returns>
         /// <response code="200">Utilisateur authentifié avec succès.</response>
         /// <response code="400">Identifiants invalides ou erreur d'authentification.</response>
+        /// <response code="404">Utilisateur non trouvé.</response>
+        /// <response code="500">Erreur interne du serveur.</response>
         [HttpPost("login")]
         [ProducesResponseType(typeof(object), 200)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(500)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var vClient = new Supabase.Client(_supabaseUrl, _supabaseAnonKey);
-            var vUser = await vClient.Auth.SignInWithPassword(request.Email, request.Password);
-            var vProfile = await vClient.From<Profile>().Where(x => x.Email == request.Email).Single();
-            var vRole = await vClient.From<Role>().Where(x => x.Id == vProfile.RoleId).Single();
-
-            var result = new
+            try
             {
-                User = new { vProfile.Id, vProfile.Email },
-                Role = new { vRole.Id, vRole.RoleName }
-            };
-            return Ok(result);
+                // Initialisation du client Supabase
+                var vClient = new Supabase.Client(_supabaseUrl, _supabaseAnonKey);
+
+                // Authentification de l'utilisateur
+                var vUser = await vClient.Auth.SignInWithPassword(request.Email, request.Password);
+
+                // Vérification de l'existence du profil utilisateur
+                var vProfile = await vClient.From<Profile>()
+                                             .Where(x => x.Email == request.Email)
+                                             .Single();
+
+                if (vProfile == null)
+                {
+                    // Utilisateur non trouvé
+                    return NotFound(new { message = "Aucun utilisateur trouvé avec cet email." });
+                }
+
+                // Récupération du rôle associé au profil utilisateur
+                var vRole = await vClient.From<Role>()
+                                          .Where(x => x.Id == vProfile.RoleId)
+                                          .Single();
+
+                if (vRole == null)
+                {
+                    // Rôle non trouvé
+                    return BadRequest(new { message = "Aucun rôle trouvé pour cet utilisateur." });
+                }
+
+                // Création de l'objet résultat
+                var result = new
+                {
+                    User = new { vProfile.Id, vProfile.Email },
+                    Role = new { vRole.Id, vRole.RoleName }
+                };
+
+                // Retourne une réponse HTTP 200 OK avec les informations de l'utilisateur et son rôle
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var vErreur = (Supabase.Gotrue.Exceptions.GotrueException)ex;
+                if (vErreur.StatusCode == 400)
+                {
+                    // Identifiants incorrects
+                    return BadRequest(new { message = "Identifiant ou mot de passe incorrect." });
+                }
+                // Retourne une réponse HTTP 500 en cas d'erreur interne
+                return StatusCode(((Supabase.Gotrue.Exceptions.GotrueException)ex).StatusCode, new { message = "Erreur interne du serveur." });
+            }
         }
+
 
         /// <summary>
         /// Inscrit un nouvel utilisateur.
